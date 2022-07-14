@@ -8,7 +8,7 @@ version = "0.0.1"
 authors = [
   { name="Andreas Rühl", email="andreas.ruehl@gmail.com" },
 ]
-description = "Browser based authentication for the CLI"
+description = "Authorization code flow via Browser for the CLI"
 readme = "README.md"
 license = { file="LICENSE" }
 requires-python = ">=3.7"
