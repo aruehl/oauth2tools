@@ -1,10 +1,10 @@
 from flask import Flask, request
-import logging
 import requests
 from requests_oauthlib import OAuth2Session
 from threading import Thread
 import time
 import webbrowser
+from werkzeug.serving import make_server
 
 CALLBACK_URL = 'http://localhost:54345/callback'
 SCOPE = 'openid'
@@ -23,8 +23,6 @@ class OAuth4CLI:
         self.client_id = client_id
         self.client_secret = client_secret
         self.auth_code = None
-        self.app = Flask(__name__)
-        self.app.route('/callback')(self.callback)
 
     def _get_oauth2_session(self, **kwargs):
         oauth2_session = OAuth2Session(
@@ -40,22 +38,25 @@ class OAuth4CLI:
 
     class ServerThread(Thread):
 
-        def __init__(self, parent):
+        def __init__(self, app):
             Thread.__init__(self)
-            self.parent = parent
+            self.server = make_server('127.0.0.1', 54345, app)
+            self.ctx = app.app_context()
+            self.ctx.push()
 
         def run(self):
-            self.parent.app.run(
-                port=54345,
-                host='localhost'
-            )
+            self.server.serve_forever()
+
+        def shutdown(self):
+            self.server.shutdown()
 
     def login(self):
-        logging.getLogger().addHandler(logging.StreamHandler())
+        # logging.getLogger().addHandler(logging.StreamHandler())
 
-        thread = OAuth4CLI.ServerThread(self)
-        # thread.daemon = True
-        thread.start()
+        app = Flask(__name__)
+        app.route('/callback')(self.callback)
+        server = self.ServerThread(app)
+        server.start()
 
         oauth_session = self._get_oauth2_session()
         auth_url, _ = oauth_session.authorization_url(self.well_known.get('authorization_endpoint'))
@@ -63,6 +64,7 @@ class OAuth4CLI:
 
         while self.auth_code is None:
             time.sleep(1)
+        server.shutdown()
 
         oauth2token = oauth_session.fetch_token(
             token_url=self.well_known.get('token_endpoint'),

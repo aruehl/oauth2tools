@@ -20,7 +20,8 @@ classifiers = [
 dependencies = [
     'flask',
     'requests',
-    'requests-oauthlib'
+    'requests-oauthlib',
+    'werkzeug',
 ]
 
 [project.urls]
