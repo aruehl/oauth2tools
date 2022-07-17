@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='oauth4cli',
-    version='0.1.1',
+    version='0.2.0',
     description='The most straight forward way of using standard python libraries for a authorization code flow via Browser for the CLI.',
     url='https://github.com/aruehl/oauth4cli',
     author='Andreas Rühl',
