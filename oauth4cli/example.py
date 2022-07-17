@@ -1,10 +1,9 @@
+import json
 from oauth4cli import OAuth4CLI
 
 if '__main__' == __name__:
-    o4c = OAuth4CLI(
-        client_id='my-client-id',
-        client_secret='my-client-secret',
-        well_known_url='https://www.example.com/.well-known'
-    )
-    tokens = o4c.login()
-    print(tokens.get('access_token'))
+    with open("./config.json", "r") as json_file:
+        app_config = json.load(json_file)
+    o4c = OAuth4CLI(**app_config.get('oauth4cli'))
+    response = o4c.login()
+    print(response.get('access_token'))

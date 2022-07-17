@@ -1,0 +1,7 @@
+{
+  "oauth4cli": {
+    "client_id": "<client-id>",
+    "client_secret": "<client-secret>",
+    "well_known_url": "<well-known-url>"
+  }
+}
