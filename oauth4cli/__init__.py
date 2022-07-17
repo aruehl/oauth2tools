@@ -23,6 +23,7 @@ class OAuth4CLI:
         self.client_id = client_id
         self.client_secret = client_secret
         self.auth_code = None
+        self.state = None
 
     def _get_oauth2_session(self, **kwargs):
         oauth2_session = OAuth2Session(
@@ -34,6 +35,7 @@ class OAuth4CLI:
 
     def callback(self):
         self.auth_code = request.args["code"]
+        self.state = request.args["state"]
         return "You can now close this Browser tab and go back to your CLI."
 
     class ServerThread(Thread):
@@ -59,13 +61,15 @@ class OAuth4CLI:
         server.start()
 
         oauth_session = self._get_oauth2_session()
-        auth_url, _ = oauth_session.authorization_url(self.well_known.get('authorization_endpoint'))
+        auth_url, state = oauth_session.authorization_url(self.well_known.get('authorization_endpoint'))
         webbrowser.open(auth_url)
 
         while self.auth_code is None:
             time.sleep(1)
         server.shutdown()
 
+        if state != self.state:
+            raise Exception("manipulated state received")
         oauth2token = oauth_session.fetch_token(
             token_url=self.well_known.get('token_endpoint'),
             client_secret=self.client_secret,
