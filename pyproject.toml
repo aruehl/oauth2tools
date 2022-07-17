@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "oauth4cli"
-version = "0.0.1"
+version = "0.1.0"
 authors = [
   { name="Andreas Rühl", email="andreas.ruehl@gmail.com" },
 ]

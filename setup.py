@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='oauth4cli',
-    version='0.0.1',
+    version='0.1.0',
     description='Authorization code flow via Browser for the CLI',
     url='https://github.com/aruehl/oauth4cli',
     author='Andreas Rühl',
@@ -14,7 +14,8 @@ setup(
     install_requires=[
         'flask',
         'requests',
-        'requests-oauthlib'
+        'requests-oauthlib',
+        'werkzeug'
     ],
     zip_safe=False
 )
