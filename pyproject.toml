@@ -4,11 +4,11 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "oauth4cli"
-version = "0.1.0"
+version = "0.1.1"
 authors = [
   { name="Andreas Rühl", email="andreas.ruehl@gmail.com" },
 ]
-description = "Authorization code flow via Browser for the CLI"
+description = "The most straight forward way of using standard python libraries for a authorization code flow via Browser for the CLI"
 readme = "README.md"
 license = { file="LICENSE" }
 requires-python = ">=3.7"
