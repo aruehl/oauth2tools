@@ -52,7 +52,7 @@ class OAuth4CLI:
         def callback(self):
             self.auth_code = request.args["code"]
             self.state = request.args["state"]
-            return "You can now close this Browser tab and go back to your CLI."
+            return render_template("close_me.html")
 
         def shutdown(self):
             self.server.shutdown()
