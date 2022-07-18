@@ -1,13 +1,14 @@
-from flask import Flask, request
 import requests
-from requests_oauthlib import OAuth2Session
-from threading import Thread
 import time
 import webbrowser
+
+from flask import Flask, request, render_template
+from requests_oauthlib import OAuth2Session
+from threading import Thread
 from werkzeug.serving import make_server
 
 CALLBACK_URL = 'http://localhost:54345/callback'
-SCOPE = 'openid'
+DEFAULT_SCOPE = 'openid'
 
 
 def _get_well_known_metadata(well_known_url):
@@ -33,21 +34,25 @@ class OAuth4CLI:
             **kwargs)
         return oauth2_session
 
-    def callback(self):
-        self.auth_code = request.args["code"]
-        self.state = request.args["state"]
-        return "You can now close this Browser tab and go back to your CLI."
-
     class ServerThread(Thread):
 
-        def __init__(self, app):
+        def __init__(self):
             Thread.__init__(self)
+            app = Flask(__name__)
+            app.route('/callback')(self.callback)
             self.server = make_server('127.0.0.1', 54345, app)
+            self.auth_code = None
+            self.state = None
             self.ctx = app.app_context()
             self.ctx.push()
 
         def run(self):
             self.server.serve_forever()
+
+        def callback(self):
+            self.auth_code = request.args["code"]
+            self.state = request.args["state"]
+            return "You can now close this Browser tab and go back to your CLI."
 
         def shutdown(self):
             self.server.shutdown()
@@ -55,24 +60,22 @@ class OAuth4CLI:
     def login(self):
         # logging.getLogger().addHandler(logging.StreamHandler())
 
-        app = Flask(__name__)
-        app.route('/callback')(self.callback)
-        server = self.ServerThread(app)
+        server = self.ServerThread()
         server.start()
 
         oauth_session = self._get_oauth2_session()
         auth_url, state = oauth_session.authorization_url(self.well_known.get('authorization_endpoint'))
         webbrowser.open(auth_url)
 
-        while self.auth_code is None:
+        while server.auth_code is None:
             time.sleep(1)
         server.shutdown()
 
-        if state != self.state:
+        if state != server.state:
             raise Exception("manipulated state received")
         oauth2token = oauth_session.fetch_token(
             token_url=self.well_known.get('token_endpoint'),
             client_secret=self.client_secret,
-            code=self.auth_code)
+            code=server.auth_code)
 
         return oauth2token
