@@ -3,12 +3,12 @@ requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "oauth4cli"
+name = "oauth2tools"
 version = "0.3.0"
 authors = [
   { name="Andreas Rühl", email="andreas.ruehl@gmail.com" },
 ]
-description = "The most straight forward way of using standard python libraries for a authorization code flow via Browser for the CLI."
+description = "A toolset for the most requirements dealing with OAuth2."
 readme = "README.md"
 license = { file="LICENSE" }
 requires-python = ">=3.7"

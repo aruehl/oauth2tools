@@ -1,5 +1,4 @@
 flask
 requests
-requests_oauthlib
 setuptools
 werkzeug

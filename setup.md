@@ -9,4 +9,4 @@ https://packaging.python.org/en/latest/guides/using-testpypi/
     py -m build
 
 ## upload the package
-    py -m twine upload --repository pypi dist/oauth4cli-0.1.1it *
+    py -m twine upload --repository pypi dist/oauth2tools-0.4.0*

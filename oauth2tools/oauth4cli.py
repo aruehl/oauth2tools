@@ -3,9 +3,10 @@ import time
 import webbrowser
 
 from flask import Flask, request, render_template
-from requests_oauthlib import OAuth2Session
 from threading import Thread
 from werkzeug.serving import make_server
+
+from . import OAuthTools
 
 CALLBACK_URL = 'http://localhost:54345/callback'
 DEFAULT_SCOPE = 'openid'
@@ -17,22 +18,10 @@ def _get_well_known_metadata(well_known_url):
     return response.json()
 
 
-class OAuth4CLI:
+class OAuth4CLI(OAuthTools):
 
-    def __init__(self, well_known_url, client_id, client_secret=None, flow='auth_code', **kwargs):
-        self.well_known = _get_well_known_metadata(well_known_url)
-        self.client_id = client_id
-        self.client_secret = client_secret
-        self.auth_code = None
-        self.state = None
-
-    def _get_oauth2_session(self, **kwargs):
-        oauth2_session = OAuth2Session(
-            client_id=self.client_id,
-            # scope=SCOPE,
-            redirect_uri=CALLBACK_URL,
-            **kwargs)
-        return oauth2_session
+    def __init__(self, well_known_url, client_id, client_secret=None, **kwargs):
+        super().__init__(well_known_url, client_id, client_secret, **kwargs)
 
     class ServerThread(Thread):
 
@@ -63,19 +52,18 @@ class OAuth4CLI:
         server = self.ServerThread()
         server.start()
 
-        oauth_session = self._get_oauth2_session()
-        auth_url, state = oauth_session.authorization_url(self.well_known.get('authorization_endpoint'))
-        webbrowser.open(auth_url)
+        webbrowser.open(self.authorization_url(self.well_known.get('authorization_endpoint')))
 
         while server.auth_code is None:
             time.sleep(1)
         server.shutdown()
 
-        if state != server.state:
+        if self.state != server.state:
             raise Exception("manipulated state received")
-        oauth2token = oauth_session.fetch_token(
-            token_url=self.well_known.get('token_endpoint'),
+
+        oauth2token = self.code_to_token(
             client_secret=self.client_secret,
-            code=server.auth_code)
+            code=server.auth_code
+        )
 
         return oauth2token
