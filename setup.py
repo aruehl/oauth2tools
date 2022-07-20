@@ -9,7 +9,7 @@ setup(
     author_email='andreas.ruehl@gmail.com',
     license='MIT',
     packages=[
-        'oauth4cli'
+        'oauth2tools'
     ],
     install_requires=[
         'flask',
