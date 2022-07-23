@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='oauth2tools',
-    version='0.4.0',
+    version='0.4.1',
     description='A toolset for the most requirements dealing with OAuth2',
     url='https://github.com/aruehl/oauth2tools',
     author='Andreas Rühl',

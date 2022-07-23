@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "oauth2tools"
-version = "0.4.0"
+version = "0.4.1"
 authors = [
   { name="Andreas Rühl", email="andreas.ruehl@gmail.com" },
 ]
