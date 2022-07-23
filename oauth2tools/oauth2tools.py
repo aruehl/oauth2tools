@@ -1,32 +1,11 @@
-import base64
-import hashlib
 import requests
 
-from random import random
-from string import ascii_letters, digits
-
-
-def random_string(str_size: int):
-    chars = ascii_letters + digits + ".-_~"
-    return ''.join(random.choice(chars) for x in range(str_size))
-
-
-def well_known_metadata(well_known_url: str):
-    response = requests.get(well_known_url)
-    response.raise_for_status()
-    return response.json()
-
-
-def pkce_codes():
-    code_verifier = random_string(45)
-    code_digest = hashlib.sha256(code_verifier.encode('utf-8')).digest()
-    code_challenge = base64.urlsafe_b64encode(code_digest).decode('utf-8').replace('=', '')
-    return code_challenge, code_verifier
+from . import PKCE, pkce_codes, random_string, well_known_metadata
 
 
 class OAuthTools(object):
 
-    def __init__(self, well_known_url: str, client_id: str, client_secret: str=None, pkce: bool = False,
+    def __init__(self, well_known_url: str, client_id: str, client_secret: str=None, pkce: PKCE=PKCE.S256,
                  scope: str="openid", oidc: bool=True):
         self.well_known = well_known_metadata(well_known_url)
         self.client_id = client_id
@@ -39,6 +18,12 @@ class OAuthTools(object):
         self.nonce = None
         self.code_verifier = None
 
+    def _post_for_token(self, form_data: dict):
+        response = requests.post(self.well_known.get('token_endpoint'), data=form_data)
+        response.raise_for_status()
+
+        return response.json()
+
     def authorization_url(self, redirect_uri: str):
         self.redirect_uri = redirect_uri
         self.state = random_string(20)
@@ -47,15 +32,14 @@ class OAuthTools(object):
             "response_type": "code",
             "client_id": self.client_id,
             "state": self.state,
-
             "scope": self.scope,
             "redirect_uri": redirect_uri,
         }
 
         if self.pkce:
-            code_challenge, self.code_verifier = pkce_codes()
+            code_challenge, self.code_verifier = pkce_codes(self.pkce)
             params["code_challenge"] = code_challenge
-            params["code_challenge_method"] = "S256"
+            params["code_challenge_method"] = self.pkce.name
 
         if self.oidc:
             self.nonce = random_string(25)
@@ -73,6 +57,7 @@ class OAuthTools(object):
             "redirect_uri": self.redirect_uri,
             "client_id": self.client_id,
         }
+
         if client_secret:
             form_data['client_secret'] = client_secret
         elif self.client_secret:
@@ -88,16 +73,16 @@ class OAuthTools(object):
 
         return self._post_for_token(form_data)
 
-    def client_credentials_grant(self, validate=None):
+    def client_credentials_grant(self):
         params = {
             'client_id': self.client_id,
             'client_secret': self.client_secret,
             'grant_type': 'client_credentials'
         }
         # wsout.printFlush("doing client credential authentication ... ")
-        return self._postForToken(params, validate=validate)
+        return self._post_for_token(params)
 
-    def password_grant(self, username: str, password: str, scope: str='openid', validate=None):
+    def password_grant(self, username: str, password: str, scope: str='openid'):
         params = {
             'client_id': self.client_id,
             'client_secret': self.client_secret,
@@ -107,11 +92,5 @@ class OAuthTools(object):
             'scope': scope
         }
         # wsout.printFlush("doing password based authentication with scope '%s' ... " % params['scope'])
-        return self._postForToken(params, validate=validate)
-
-    def _post_for_token(self, form_data: dict):
-        response = requests.post(self.well_known.get('token_endpoint'), data=form_data)
-        response.raise_for_status()
-
-        return response.json()
+        return self._post_for_token(params)
 
