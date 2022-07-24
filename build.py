@@ -1,0 +1,52 @@
+import os
+import sys
+
+
+def install_and_import(package):
+    import pip
+    import importlib
+    pip.main(['install', package])
+    globals()[package] = importlib.import_module(package)
+
+
+try:
+    import toml
+except ImportError:
+    install_and_import('toml')
+
+
+def increment(i):
+    return str(int(i)+1)
+
+
+project = toml.load("pyproject.toml")
+version = project.get('project').get('version').split(".")
+
+if len(sys.argv) == 1:
+    print(f"usage: {sys.argv[0]} mayor|minor|patch")
+elif sys.argv[1] == "mayor":
+    version[0] = increment(version[0])
+    version[1] = "0"
+    version[2] = "0"
+elif sys.argv[1] == "minor":
+    version[1] = increment(version[1])
+    version[2] = "0"
+elif sys.argv[1] == "patch":
+    version[2] = increment(version[2])
+else:
+    print(f"usage: {sys.argv[0]} mayor|minor|patch")
+
+version_string = ".".join(version)
+project.get('project')['version'] = version_string
+
+with open('pyproject.toml', 'w') as f:
+    new_toml_string = toml.dump(project, f)
+
+os.remove("dist")
+
+os.system(f"git commit -m 'new version {version_string}'")
+os.system("git push")
+os.system(f"git tag {version_string}")
+os.system(f"git push origin {version_string}")
+
+os.system("py -m build")
