@@ -44,10 +44,10 @@ with open('pyproject.toml', 'w', encoding='utf8') as f:
     new_toml_string = toml.dump(project, f)
 
 shutil.rmtree("dist")
-#
-# os.system(f"git commit -m 'new version {version_string}' pyproject.toml")
-# os.system("git push")
-# os.system(f"git tag {version_string}")
-# os.system(f"git push origin {version_string}")
-#
-# os.system("py -m build")
+
+os.system(f"git commit -m 'new version {version_string}' pyproject.toml")
+os.system("git push")
+os.system(f"git tag {version_string}")
+os.system(f"git push origin {version_string}")
+
+os.system("py -m build")
