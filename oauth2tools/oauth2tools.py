@@ -36,14 +36,16 @@ def pkce_codes(methode: PKCE=PKCE.S256, length: int=64):
     if methode == PKCE.S256:
         code_digest = hashlib.sha256(code_verifier.encode('utf-8')).digest()
         code_challenge = base64.urlsafe_b64encode(code_digest).decode('utf-8').replace('=', '')
-    else:
+    elif methode == PKCE.plain:
         code_challenge = code_verifier
+    else:
+        raise ValueError("PKCE.none is no valid value for code generation")
     return code_challenge, code_verifier
 
 
 class OAuthTools(object):
 
-    def __init__(self, well_known_url: str, client_id: str, client_secret: str=None, pkce: PKCE=PKCE.S256,
+    def __init__(self, well_known_url: str, client_id: str, client_secret: str=None, pkce: PKCE=PKCE.none,
                  scope: str="openid", oidc: bool=True):
         self.well_known = well_known_metadata(well_known_url)
         self.client_id = client_id
@@ -74,7 +76,7 @@ class OAuthTools(object):
             "redirect_uri": redirect_uri,
         }
 
-        if self.pkce:
+        if self.pkce is not PKCE.none:
             code_challenge, self.code_verifier = pkce_codes(self.pkce)
             params["code_challenge"] = code_challenge
             params["code_challenge_method"] = self.pkce.name
@@ -88,7 +90,12 @@ class OAuthTools(object):
 
         return auth_url
 
-    def code_to_token_post_data(self, code: str, client_secret: str=None):
+    def code_to_token_post_data(self, code: str, client_secret: str=None, redirect_uri: str=None):
+        if redirect_uri is not None:
+            self.redirect_uri = redirect_uri
+        elif self.redirect_uri is None:
+            raise ValueError("redirect_uri is required")
+
         form_data = {
             "grant_type": "authorization_code",
             "code": code,
@@ -117,7 +124,7 @@ class OAuthTools(object):
             'client_secret': self.client_secret,
             'grant_type': 'client_credentials'
         }
-        # wsout.printFlush("doing client credential authentication ... ")
+        # print("doing client credential authentication ... ")
         return self._post_for_token(params)
 
     def password_grant(self, username: str, password: str, scope: str='openid'):
@@ -129,6 +136,5 @@ class OAuthTools(object):
             'password': password,
             'scope': scope
         }
-        # wsout.printFlush("doing password based authentication with scope '%s' ... " % params['scope'])
+        # print("doing password based authentication with scope '%s' ... " % params['scope'])
         return self._post_for_token(params)
-
