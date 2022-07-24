@@ -11,7 +11,7 @@ authors = [
 maintainers = [
   { name="Andreas Rühl" },
 ]
-description = "A toolset for the most requirements dealing with OAuth2."
+description = "A toolset for the most requirements dealing with OAuth2 and OpenID Connect."
 readme = "README.md"
 #license = { file="LICENSE" }
 license = { text="MIT" }

@@ -1,6 +1,6 @@
 # OAuth2Tools
 
-A toolset for the most requirements dealing with OAuth2.
+A toolset for the most requirements dealing with OAuth2 and OpenID Connect.
 
 ###  building the URL for the authentication endpoint
 
