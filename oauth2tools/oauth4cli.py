@@ -29,7 +29,7 @@ class OAuth4CLI(OAuthTools):
             Thread.__init__(self)
             app = Flask(__name__)
             app.route('/callback')(self.callback)
-            self.server = make_server('127.0.0.1', 54345, app)
+            self.server = make_server('localhost', 54345, app)
             self.auth_code = None
             self.state = None
             self.ctx = app.app_context()
@@ -52,8 +52,7 @@ class OAuth4CLI(OAuthTools):
         server = self.ServerThread()
         server.start()
 
-        webbrowser.open(self.authorization_url(self.well_known.get('authorization_endpoint')))
-
+        webbrowser.open(self.authorization_url(CALLBACK_URL))
         while server.auth_code is None:
             time.sleep(1)
         server.shutdown()
