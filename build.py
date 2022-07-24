@@ -1,4 +1,5 @@
 import os
+import shutil
 import sys
 
 
@@ -39,14 +40,14 @@ else:
 version_string = ".".join(version)
 project.get('project')['version'] = version_string
 
-with open('pyproject.toml', 'w') as f:
+with open('pyproject.toml', 'w', encoding='utf8') as f:
     new_toml_string = toml.dump(project, f)
 
-os.remove("dist")
-
-os.system(f"git commit -m 'new version {version_string}'")
-os.system("git push")
-os.system(f"git tag {version_string}")
-os.system(f"git push origin {version_string}")
-
-os.system("py -m build")
+shutil.rmtree("dist")
+#
+# os.system(f"git commit -m 'new version {version_string}' pyproject.toml")
+# os.system("git push")
+# os.system(f"git tag {version_string}")
+# os.system(f"git push origin {version_string}")
+#
+# os.system("py -m build")
