@@ -25,6 +25,7 @@ version = project.get('project').get('version').split(".")
 
 if len(sys.argv) == 1:
     print(f"usage: {sys.argv[0]} mayor|minor|patch")
+    exit(1)
 elif sys.argv[1] == "mayor":
     version[0] = increment(version[0])
     version[1] = "0"
@@ -36,6 +37,7 @@ elif sys.argv[1] == "patch":
     version[2] = increment(version[2])
 else:
     print(f"usage: {sys.argv[0]} mayor|minor|patch")
+    exit(1)
 
 version_string = ".".join(version)
 project.get('project')['version'] = version_string
@@ -49,7 +51,6 @@ if os.path.isdir("dist"):
 print(f"git commit -m 'new version {version_string}' pyproject.toml")
 os.system(f"git commit -m \"new version {version_string}\" pyproject.toml")
 os.system("git push")
-exit(1)
 os.system(f"git tag {version_string}")
 os.system(f"git push origin {version_string}")
 
