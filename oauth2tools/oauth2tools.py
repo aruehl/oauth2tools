@@ -7,12 +7,6 @@ import requests
 from string import ascii_letters, digits
 
 
-class PKCE(enum.Enum):
-    none = 0
-    plain = 1
-    S256 = 2
-
-
 def random_string(str_size: int):
     chars = ascii_letters + digits + ".-_~"
     return ''.join(random.choice(chars) for x in range(str_size))
@@ -24,28 +18,28 @@ def well_known_metadata(well_known_url: str):
     return response.json()
 
 
-def pkce_codes(methode: PKCE=PKCE.S256, length: int=64):
+def pkce_codes(methode: str="S256", length: int=64):
     """
     Generates the code_challenge and code_verifier for the OAuth2 PKCE extension.
     For more information about PKCE look at: https://www.oauth.com/oauth2-servers/pkce/authorization-request/
-    :param methode: Type of encryption. If possible, use S256!
+    :param methode: Type of encryption. Valid are plain and S256. If possible use S256.
     :param length: The length of the code_verifier. Valid strings are between 43 and 128 characters long.
     :return: tuple of code_challenge and code_verifier
     """
     code_verifier = random_string(length)
-    if methode == PKCE.S256:
+    if methode == "S256":
         code_digest = hashlib.sha256(code_verifier.encode('utf-8')).digest()
         code_challenge = base64.urlsafe_b64encode(code_digest).decode('utf-8').replace('=', '')
-    elif methode == PKCE.plain:
+    elif methode == "plain":
         code_challenge = code_verifier
     else:
-        raise ValueError("PKCE.none is no valid value for code generation")
+        raise ValueError("Valid values for methode are only 'plain' and 'S256'.")
     return code_challenge, code_verifier
 
 
 class OAuthTools(object):
 
-    def __init__(self, well_known_url: str, client_id: str, client_secret: str=None, pkce: PKCE=PKCE.none,
+    def __init__(self, well_known_url: str, client_id: str, client_secret: str=None, pkce: str=None,
                  scope: str="openid", oidc: bool=True):
         self.well_known = well_known_metadata(well_known_url)
         self.client_id = client_id
@@ -76,10 +70,10 @@ class OAuthTools(object):
             "redirect_uri": redirect_uri,
         }
 
-        if self.pkce is not PKCE.none:
+        if self.pkce:
             code_challenge, self.code_verifier = pkce_codes(self.pkce)
             params["code_challenge"] = code_challenge
-            params["code_challenge_method"] = self.pkce.name
+            params["code_challenge_method"] = self.pkce
 
         if self.oidc:
             self.nonce = random_string(25)
