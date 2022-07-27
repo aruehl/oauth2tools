@@ -1,40 +1,25 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = [ "setuptools>=61.0",]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "oauth2tools"
-version = "0.4.2"
-authors = [
-  { name="Andreas Rühl" },
-]
-maintainers = [
-  { name="Andreas Rühl" },
-]
+version = "0.4.4"
 description = "A toolset for the most requirements dealing with OAuth2 and OpenID Connect."
 readme = "README.md"
-#license = { file="LICENSE" }
-license = { text="MIT" }
 requires-python = ">=3.7"
-classifiers = [
-    "Development Status :: 3 - Alpha", # https://martin-thoma.com/software-development-stages/
-    "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
-]
-keywords = [
-    "OAuth2",
-    "OIDC",
-    "OpenID Connect",
-    "Tools",
-    "Helper",
-]
-dependencies = [
-    'flask',
-    'requests',
-    'werkzeug',
-]
+classifiers = [ "Development Status :: 3 - Alpha", "Programming Language :: Python :: 3", "License :: OSI Approved :: MIT License", "Operating System :: OS Independent",]
+keywords = [ "OAuth2", "OIDC", "OpenID Connect", "Tools", "Helper",]
+dependencies = [ "flask", "requests", "werkzeug",]
+[[project.authors]]
+name = "Andreas Rühl"
+
+[[project.maintainers]]
+name = "Andreas Rühl"
+
+[project.license]
+text = "MIT"
 
 [project.urls]
-"GitHub" = "https://github.com/aruehl/oauth2tools"
+GitHub = "https://github.com/aruehl/oauth2tools"
 "Bug Tracker" = "https://github.com/aruehl/oauth2tools/issues"
