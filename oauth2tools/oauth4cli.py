@@ -1,4 +1,4 @@
-import requests
+import logging
 import time
 import webbrowser
 
@@ -6,16 +6,10 @@ from flask import Flask, request, render_template
 from threading import Thread
 from werkzeug.serving import make_server
 
-from . import OAuthTools
+from . import OAuthTools, validate_by_jwks
 
 CALLBACK_URL = 'http://localhost:54345/callback'
 DEFAULT_SCOPE = 'openid'
-
-
-def _get_well_known_metadata(well_known_url):
-    response = requests.get(well_known_url)
-    response.raise_for_status()
-    return response.json()
 
 
 class OAuth4CLI(OAuthTools):
@@ -65,4 +59,11 @@ class OAuth4CLI(OAuthTools):
             code=server.auth_code
         )
 
+        data = validate_by_jwks(
+            token=oauth2token.get('id_token', None),
+            jwks_url=self.well_known.get('jwks_uri'),
+            options={"verify_aud": False},
+            claims={"nonce": self.nonce} if self.nonce else {}
+        )
+        logging.debug(f"token body: {data}")
         return oauth2token
