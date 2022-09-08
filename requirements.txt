@@ -1,4 +1,6 @@
+cryptography
 flask
+PyJWT
 requests
 toml
 werkzeug
