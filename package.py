@@ -54,4 +54,4 @@ os.system("git push")
 os.system(f"git tag {version_string}")
 os.system(f"git push origin {version_string}")
 
-os.system("py -m build")
+# os.system("py -m build")
