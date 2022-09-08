@@ -41,7 +41,7 @@ class OAuth4CLI(OAuthTools):
             self.server.shutdown()
 
     def login(self):
-        # logging.getLogger().addHandler(logging.StreamHandler())
+        logging.getLogger("werkzeug").disabled = True
 
         server = self.ServerThread()
         server.start()
