@@ -37,7 +37,7 @@ def pkce_codes(methode: str="S256", length: int=64):
     return code_challenge, code_verifier
 
 
-def validate_by_key(token: str, signing_key: str, algorithms: list[str]=None, **kwargs):
+def validate_by_key(token: str, signing_key: str, algorithms: list=None, **kwargs):
     """
     Using PyJWT (https://pyjwt.readthedocs.io/en/latest/usage.html) to validate the JWT.
     Algorithms by default are restricted to RS256 and ES256.
@@ -65,7 +65,7 @@ def validate_by_key(token: str, signing_key: str, algorithms: list[str]=None, **
     return data
 
 
-def validate_by_jwks(token: str, jwks_url: str, algorithms: list[str]=None, **kwargs):
+def validate_by_jwks(token: str, jwks_url: str, algorithms: list=None, **kwargs):
     """
     Using PyJWT (https://pyjwt.readthedocs.io/en/latest/usage.html) to validate the JWT.
     Algorithms are restricted to RS256.
