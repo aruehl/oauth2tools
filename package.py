@@ -49,7 +49,7 @@ if os.path.isdir("dist"):
     shutil.rmtree("dist")
 
 print(f"git commit -m 'new version {version_string}' pyproject.toml")
-os.system(f"git commit -m \"new version {version_string}\" pyproject.toml")
+os.system(f"git commit -m \"new pyproject.toml for version {version_string}\" pyproject.toml")
 os.system("git push")
 os.system(f"git tag {version_string}")
 os.system(f"git push origin {version_string}")
