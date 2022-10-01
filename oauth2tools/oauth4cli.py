@@ -14,7 +14,7 @@ DEFAULT_SCOPE = 'openid'
 
 class OAuth4CLI(OAuthTools):
 
-    def __init__(self, well_known_url, client_id, client_secret=None, **kwargs):
+    def __init__(self, well_known_url: str, client_id: str, client_secret: str=None, **kwargs):
         super().__init__(well_known_url, client_id, client_secret, **kwargs)
 
     class ServerThread(Thread):

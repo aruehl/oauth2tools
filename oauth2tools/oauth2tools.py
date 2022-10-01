@@ -1,6 +1,5 @@
 import base64
 import hashlib
-import jwt
 import random
 import requests
 
@@ -35,49 +34,6 @@ def pkce_codes(methode: str="S256", length: int=64):
     else:
         raise ValueError("Valid values for methode are only 'plain' and 'S256'.")
     return code_challenge, code_verifier
-
-
-def validate_by_key(token: str, signing_key: str, algorithms: list=None, **kwargs):
-    """
-    Using PyJWT (https://pyjwt.readthedocs.io/en/latest/usage.html) to validate the JWT.
-    Algorithms by default are restricted to RS256 and ES256.
-    All keyword arguments are bypassed. For example:
-    issuer="https://www.example.com/idp/test"
-    audience=["my_service"]
-    options={"verify_aud": False}
-    """
-    if algorithms is None:
-        algorithms = ["ES256", "RS256"]
-
-    data = jwt.decode(
-        token,
-        signing_key,
-        algorithms=algorithms,
-        **kwargs
-    )
-    for k in kwargs.get("claims", {}):
-        if k in data:
-            if data.get(k) != kwargs.get("claims").get(k):
-                raise Exception(f"invalid value for claim '{k}'")
-        else:
-            raise Exception(f"required claim '{k}' is missing")
-
-    return data
-
-
-def validate_by_jwks(token: str, jwks_url: str, algorithms: list=None, **kwargs):
-    """
-    Using PyJWT (https://pyjwt.readthedocs.io/en/latest/usage.html) to validate the JWT.
-    Algorithms are restricted to RS256.
-    All keyword arguments are bypassed. For example:
-    issuer="https://www.example.com/idp/test"
-    audience=["my_service"]
-    options={"verify_aud": False}
-    """
-    client = jwt.PyJWKClient(jwks_url)
-    signing_key = client.get_signing_key_from_jwt(token)
-    data = validate_by_key(token, signing_key.key, algorithms, **kwargs)
-    return data
 
 
 class OAuthTools(object):
