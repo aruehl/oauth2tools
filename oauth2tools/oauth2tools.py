@@ -1,51 +1,29 @@
-import base64
-import hashlib
-import random
 import requests
 
-from string import ascii_letters, digits
-
-
-def random_string(str_size: int):
-    chars = ascii_letters + digits + ".-_~"
-    return ''.join(random.choice(chars) for x in range(str_size))
-
-
-def well_known_metadata(well_known_url: str):
-    response = requests.get(well_known_url)
-    response.raise_for_status()
-    return response.json()
-
-
-def pkce_codes(methode: str="S256", length: int=64):
-    """
-    Generates the code_challenge and code_verifier for the OAuth2 PKCE extension.
-    For more information about PKCE look at: https://www.oauth.com/oauth2-servers/pkce/authorization-request/
-    :param methode: Type of encryption. Valid are plain and S256. If possible use S256.
-    :param length: The length of the code_verifier. Valid strings are between 43 and 128 characters long.
-    :return: tuple of code_challenge and code_verifier
-    """
-    code_verifier = random_string(length)
-    if methode == "S256":
-        code_digest = hashlib.sha256(code_verifier.encode('utf-8')).digest()
-        code_challenge = base64.urlsafe_b64encode(code_digest).decode('utf-8').replace('=', '')
-    elif methode == "plain":
-        code_challenge = code_verifier
-    else:
-        raise ValueError("Valid values for methode are only 'plain' and 'S256'.")
-    return code_challenge, code_verifier
-
+from . import tools
 
 class OAuthTools(object):
 
-    def __init__(self, well_known_url: str, client_id: str, client_secret: str=None, pkce: str=None,
-                 scope: str="openid", oidc: bool=True):
-        self.well_known = well_known_metadata(well_known_url)
+    def __init__(self, well_known_url: str, client_id: str,
+                 client_secret: str=None,
+                 scope: str=None,
+                 pkce: str=None,
+                 oidc: bool=True):
+        """
+        Initiate the OAuthTools.
+        :param well_known_url:
+        :param client_id:
+        :param client_secret:
+        :param scope:
+        :param pkce: if required, the type of pkce method. Valid are 'plain' and 'S256'. If possible use S256.
+        :param oidc: if True (default), the additional nonce parameter will be used
+        """
+        self.well_known = tools.well_known_metadata(well_known_url)
         self.client_id = client_id
         self.client_secret = client_secret
         self.oidc = oidc
         self.pkce = pkce
-        self.scope = scope
+        self.scope = scope if scope else "openid" if oidc else ""
         self.redirect_uri = None
         self.state = None
         self.nonce = None
@@ -57,25 +35,31 @@ class OAuthTools(object):
 
         return response.json()
 
-    def authorization_url(self, redirect_uri: str):
+    def authorization_url(self, redirect_uri: str, scope: str = None):
+        """
+        Builds the full authorization url for an authorization code flow request
+        :param redirect_uri:
+        :param scope: optional scope (overwrites the scope from initiation)
+        :return: authorization url
+        """
         self.redirect_uri = redirect_uri
-        self.state = random_string(20)
+        self.state = tools.random_string(20)
 
         params = {
             "response_type": "code",
             "client_id": self.client_id,
             "state": self.state,
-            "scope": self.scope,
+            "scope": scope if scope else self.scope,
             "redirect_uri": redirect_uri,
         }
 
         if self.pkce:
-            code_challenge, self.code_verifier = pkce_codes(self.pkce)
+            code_challenge, self.code_verifier = tools.pkce_codes(self.pkce)
             params["code_challenge"] = code_challenge
             params["code_challenge_method"] = self.pkce
 
         if self.oidc:
-            self.nonce = random_string(25)
+            self.nonce = tools.random_string(25)
             params["nonce"] = self.nonce
 
         query_string = "&".join(f'{key}={value}' for key, value in params.items())
@@ -84,9 +68,9 @@ class OAuthTools(object):
         return auth_url
 
     def code_to_token_post_data(self, code: str, client_secret: str=None, redirect_uri: str=None):
-        if redirect_uri is not None:
+        if redirect_uri:
             self.redirect_uri = redirect_uri
-        elif self.redirect_uri is None:
+        elif not self.redirect_uri:
             raise ValueError("redirect_uri is required")
 
         form_data = {
