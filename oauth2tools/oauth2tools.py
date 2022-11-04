@@ -14,7 +14,7 @@ class OAuthTools(object):
         :param well_known_url:
         :param client_id:
         :param client_secret:
-        :param scope:
+        :param scope: space separated list of scopes
         :param pkce: if required, the type of pkce method. Valid are 'plain' and 'S256'. If possible use S256.
         :param oidc: if True (default), the additional nonce parameter will be used
         """

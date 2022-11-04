@@ -1,6 +1,4 @@
 import json
-from ctypes import Union
-
 import jwt
 
 

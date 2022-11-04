@@ -6,7 +6,8 @@ from flask import Flask, request, render_template
 from threading import Thread
 from werkzeug.serving import make_server
 
-from . import OAuthTools, validate_by_jwks
+from . import OAuthTools
+from .jwt_helper import *
 
 CALLBACK_URL = 'http://localhost:54345/callback'
 DEFAULT_SCOPE = 'openid'
