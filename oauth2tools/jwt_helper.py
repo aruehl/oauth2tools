@@ -1,27 +1,21 @@
 import json
 import jwt
 
-
-def _return(decoded_string: str, as_json: bool = False):
-    if as_json:
-        return json.loads(decoded_string)
-    else:
-        return decoded_string
+from .exceptions import InvalidClaimValueError, InvalidClaimTypeError, MissingRequiredClaimError
 
 
-def get_header(token: str, as_json: bool = False):
+def get_header(token: str) -> dict:
     """
     :param token:
-    :param as_json:
     :return: decoded header
     """
-    return _return(jwt.get_unverified_header(token), as_json)
+    return json.loads(jwt.get_unverified_header(token))
 
 
-def get_body(token: str, as_json: bool = False):
+def get_body(token: str) -> dict:
     """
+    Returns the body of the jwt
     :param token: the jwt
-    :param as_json: return the body as json
     :return: decoded body
     """
     return jwt.decode(token, options={"verify_signature": False})
@@ -29,20 +23,21 @@ def get_body(token: str, as_json: bool = False):
 
 def get_claim(token: str, claim_name: str):
     """
+    Returns the value of the named jwt claim
     :param token: the jwt
     :param claim_name: name or path of the claim to return
     :return: decoded body
     """
-    body = get_body(token, True)
+    body = get_body(token)
     try:
         claim_value = body.get(claim_name, None)
     except Exception:
-        raise jwt.exceptions.MissingRequiredClaimError(f"required claim '{claim_name}' is missing")
+        raise MissingRequiredClaimError(f"required claim '{claim_name}' is missing")
     else:
         return claim_value
 
 
-def validate_by_key(token: str, signing_key: str, algorithms: list = None, as_json: bool = False, **kwargs):
+def validate_by_key(token: str, signing_key: str, algorithms: list = None, **kwargs) -> dict:
     """
     Using PyJWT (https://pyjwt.readthedocs.io/en/latest/usage.html) to validate the JWT.
     Algorithms are restricted to RS256 and ES256 by default.
@@ -58,7 +53,6 @@ def validate_by_key(token: str, signing_key: str, algorithms: list = None, as_js
     :param token: the jwt
     :param signing_key: the public key for checking the signature
     :param algorithms: list of valid algorithms
-    :param as_json: choose whether the response should be string or json
     :param kwargs: everything supported by the PyJWT module
     :return: decoded body
     """
@@ -80,32 +74,32 @@ def validate_by_key(token: str, signing_key: str, algorithms: list = None, as_js
             if type(claim_value) is str:
                 if type(expected_value) is str:
                     if claim_value != expected_value:
-                        raise jwt.exceptions.InvalidKeyError(
+                        raise InvalidClaimValueError(
                             f"invalid value '{claim_value}' for claim '{claim_name}' found")
                 elif type(expected_value) is list:
                     if claim_value not in expected_value:
-                        raise jwt.exceptions.InvalidKeyError(
+                        raise InvalidClaimValueError(
                             f"claim '{claim_name}' does not contain the expected value '{claim_value}'")
                 else:
-                    raise SyntaxError(f"invalid type of for claim '{claim_name}'")
+                    raise InvalidClaimTypeError(f"invalid type for claim '{claim_name}'")
             elif type(claim_value) is list:
                 if type(expected_value) is str:
                     if expected_value not in claim_value:
-                        raise jwt.exceptions.InvalidKeyError(
+                        raise InvalidClaimValueError(
                             f"no expected value ('{claim_value}') in claim '{claim_name}'")
                 elif type(expected_value) is list:
                     if len(set(claim_value).intersection(expected_value)) == 0:
-                        raise jwt.exceptions.InvalidKeyError(
+                        raise InvalidClaimValueError(
                             f"no expected value ('{claim_value}') in claim '{claim_name}'")
                 else:
                     raise SyntaxError(f"invalid type of for claim '{claim_name}'")
         else:
-            raise jwt.exceptions.MissingRequiredClaimError(f"required claim '{claim_name}' is missing")
+            raise MissingRequiredClaimError(f"required claim '{claim_name}' is missing")
 
-    return _return(decoded, as_json)
+    return decoded
 
 
-def validate_by_jwks(token: str, jwks_url: str, algorithms: list = None, as_json: bool = False, **kwargs):
+def validate_by_jwks(token: str, jwks_url: str, algorithms: list = None, **kwargs) -> dict:
     """
     Using PyJWT (https://pyjwt.readthedocs.io/en/latest/usage.html) to validate the JWT.
     Algorithms are restricted to RS256 and ES256 by default.
@@ -121,7 +115,6 @@ def validate_by_jwks(token: str, jwks_url: str, algorithms: list = None, as_json
     :param token: the jwt
     :param jwks_url: the url of the jwks
     :param algorithms: list of valid algorithms
-    :param as_json: choose whether the response should be string or json
     :param kwargs: everything supported by the PyJWT module
     :return: decoded body
     """
@@ -129,4 +122,4 @@ def validate_by_jwks(token: str, jwks_url: str, algorithms: list = None, as_json
     signing_key = client.get_signing_key_from_jwt(token)
     data = validate_by_key(token, signing_key.key, algorithms, **kwargs)
 
-    return _return(data, as_json)
+    return data
