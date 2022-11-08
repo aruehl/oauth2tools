@@ -4,6 +4,7 @@ import requests
 import time
 
 from . import tools, jwt_helper
+from .exceptions import ParameterError, TokenManipulationError
 
 
 class OAuthTools(object):
@@ -41,7 +42,7 @@ class OAuthTools(object):
         response.raise_for_status()
         response_json = response.json()
         if self.oidc and jwt_helper.get_claim(response_json.get('access_token'), "nonce") != self.nonce:
-            raise jwt.exceptions.DecodeError('unexpected nonce value in access-token')
+            raise TokenManipulationError('unexpected nonce value in access-token')
         self.refresh_token = response_json.get('refresh_token')
         return response_json
 
@@ -81,7 +82,7 @@ class OAuthTools(object):
         if redirect_uri:
             self.redirect_uri = redirect_uri
         elif not self.redirect_uri:
-            raise ValueError("redirect_uri is required")
+            raise ParameterError("redirect_uri is required")
 
         form_data = {
             "grant_type": "authorization_code",
