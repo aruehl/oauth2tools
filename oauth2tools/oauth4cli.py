@@ -11,11 +11,12 @@ from .jwt_helper import *
 
 CALLBACK_URL = 'http://localhost:54345/callback'
 DEFAULT_SCOPE = 'openid'
+LOGIN_TIMEOUT = 90
 
 
 class OAuth4CLI(OAuthTools):
 
-    def __init__(self, well_known_url: str, client_id: str, client_secret: str=None, **kwargs):
+    def __init__(self, well_known_url: str, client_id: str, client_secret: str = None, **kwargs):
         super().__init__(well_known_url, client_id, client_secret, **kwargs)
 
     class ServerThread(Thread):
@@ -48,9 +49,15 @@ class OAuth4CLI(OAuthTools):
         server.start()
 
         webbrowser.open(self.authorization_url(CALLBACK_URL))
-        while server.auth_code is None:
+
+        count = 0
+        while server.auth_code is None and count < LOGIN_TIMEOUT:
             time.sleep(1)
+            count += 1
         server.shutdown()
+
+        if server.auth_code is None:
+            raise Exception(f"login timeout of {LOGIN_TIMEOUT} seconds reached")
 
         if self.state != server.state:
             raise Exception("manipulated state received")
@@ -66,5 +73,5 @@ class OAuth4CLI(OAuthTools):
             options={"verify_aud": False},
             claims={"nonce": self.nonce} if self.nonce else {}
         )
-        logging.debug(f"token body: {data}")
+        logging.debug(f"decoded id_token body: {data}")
         return oauth2token
