@@ -8,6 +8,7 @@ from werkzeug.serving import make_server
 
 from . import OAuthTools
 from .jwt_helper import *
+from .exceptions import WebBrowserSupportError
 
 CALLBACK_URL = 'http://localhost:54345/callback'
 DEFAULT_SCOPE = 'openid'
@@ -48,7 +49,8 @@ class OAuth4CLI(OAuthTools):
         server = self.ServerThread()
         server.start()
 
-        webbrowser.open(self.authorization_url(CALLBACK_URL))
+        if not webbrowser.open(self.authorization_url(CALLBACK_URL)):
+            raise WebBrowserSupportError('The OS has no webbrowser installed')
 
         count = 0
         while server.auth_code is None and count < LOGIN_TIMEOUT:

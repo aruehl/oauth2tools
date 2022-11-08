@@ -20,3 +20,7 @@ class ParameterError(OAuth2ToolsError):
 
 class TokenManipulationError(OAuth2ToolsError):
     pass
+
+
+class WebBrowserSupportError(OAuth2ToolsError):
+    pass
