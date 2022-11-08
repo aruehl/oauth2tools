@@ -27,10 +27,10 @@ A toolset for the most requirements dealing with OAuth2 and OpenID Connect.
 
 ### Validate an received token
 
-    from oauth2tools import jwt
+    from oauth2tools import jwt_helper
     
     try:
-        jwt.validate_by_jwks(
+        jwt_helper.validate_by_jwks(
             token="<jwt>", 
             jwks_url="<jwks_url>",
             claims={"<claim_name>": "expected_value"})
