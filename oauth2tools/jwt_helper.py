@@ -24,17 +24,22 @@ def get_body(token: str, as_json: bool = False):
     :param as_json: return the body as json
     :return: decoded body
     """
-    return _return(jwt.decode(token, options={"verify_signature": False}), as_json)
+    return jwt.decode(token, options={"verify_signature": False})
 
 
-def get_claim(token: str, claim: str):
+def get_claim(token: str, claim_name: str):
     """
     :param token: the jwt
-    :param claim: name or path of the claim to return
+    :param claim_name: name or path of the claim to return
     :return: decoded body
     """
     body = get_body(token, True)
-    return body.get(claim, None)
+    try:
+        claim_value = body.get(claim_name, None)
+    except Exception:
+        raise jwt.exceptions.MissingRequiredClaimError(f"required claim '{claim_name}' is missing")
+    else:
+        return claim_value
 
 
 def validate_by_key(token: str, signing_key: str, algorithms: list = None, as_json: bool = False, **kwargs):
@@ -59,7 +64,8 @@ def validate_by_key(token: str, signing_key: str, algorithms: list = None, as_js
     """
     if algorithms is None:
         algorithms = ["ES256", "RS256"]
-
+    if "leeway" not in kwargs:
+        kwargs["leeway"] = 5
     decoded = jwt.decode(
         token,
         signing_key,
@@ -74,23 +80,27 @@ def validate_by_key(token: str, signing_key: str, algorithms: list = None, as_js
             if type(claim_value) is str:
                 if type(expected_value) is str:
                     if claim_value != expected_value:
-                        raise InvalidClaimValueError(f"invalid value '{claim_value}' for claim '{claim_name}' found")
+                        raise jwt.exceptions.InvalidKeyError(
+                            f"invalid value '{claim_value}' for claim '{claim_name}' found")
                 elif type(expected_value) is list:
                     if claim_value not in expected_value:
-                        raise InvalidClaimValueError(f"claim '{claim_name}' does not contain the expected value '{claim_value}'")
+                        raise jwt.exceptions.InvalidKeyError(
+                            f"claim '{claim_name}' does not contain the expected value '{claim_value}'")
                 else:
                     raise SyntaxError(f"invalid type of for claim '{claim_name}'")
             elif type(claim_value) is list:
                 if type(expected_value) is str:
                     if expected_value not in claim_value:
-                        raise InvalidClaimValueError(f"no expected value ('{claim_value}') in claim '{claim_name}'")
+                        raise jwt.exceptions.InvalidKeyError(
+                            f"no expected value ('{claim_value}') in claim '{claim_name}'")
                 elif type(expected_value) is list:
                     if len(set(claim_value).intersection(expected_value)) == 0:
-                        raise InvalidClaimValueError(f"no expected value ('{claim_value}') in claim '{claim_name}'")
+                        raise jwt.exceptions.InvalidKeyError(
+                            f"no expected value ('{claim_value}') in claim '{claim_name}'")
                 else:
                     raise SyntaxError(f"invalid type of for claim '{claim_name}'")
         else:
-            raise MissingClaimError(f"required claim '{claim_name}' is missing")
+            raise jwt.exceptions.MissingRequiredClaimError(f"required claim '{claim_name}' is missing")
 
     return _return(decoded, as_json)
 
@@ -120,11 +130,3 @@ def validate_by_jwks(token: str, jwks_url: str, algorithms: list = None, as_json
     data = validate_by_key(token, signing_key.key, algorithms, **kwargs)
 
     return _return(data, as_json)
-
-
-class InvalidClaimValueError(Exception):
-    pass
-
-
-class MissingClaimError(Exception):
-    pass
