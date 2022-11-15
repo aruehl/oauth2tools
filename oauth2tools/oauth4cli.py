@@ -1,4 +1,5 @@
 import logging
+import sys
 import time
 import webbrowser
 
@@ -53,10 +54,15 @@ class OAuth4CLI(OAuthTools):
             raise WebBrowserSupportError('The OS has no webbrowser installed')
 
         count = 0
-        while server.auth_code is None and count < LOGIN_TIMEOUT:
-            time.sleep(1)
-            count += 1
-        server.shutdown()
+        try:
+            while server.auth_code is None and count < LOGIN_TIMEOUT:
+                time.sleep(1)
+                count += 1
+        except KeyboardInterrupt:
+            print("aborted by the user")
+            sys.exit()
+        finally:
+            server.shutdown()
 
         if server.auth_code is None:
             raise Exception(f"login timeout of {LOGIN_TIMEOUT} seconds reached")
