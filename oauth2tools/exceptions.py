@@ -18,6 +18,10 @@ class ParameterError(OAuth2ToolsError):
     pass
 
 
+class ServerError(OAuth2ToolsError):
+    pass
+
+
 class TokenManipulationError(OAuth2ToolsError):
     pass
 

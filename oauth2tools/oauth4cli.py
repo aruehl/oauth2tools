@@ -1,6 +1,7 @@
 import logging
 import sys
 import time
+import socket
 import webbrowser
 
 from flask import Flask, request, render_template
@@ -9,9 +10,10 @@ from werkzeug.serving import make_server
 
 from . import OAuthTools
 from .jwt_helper import *
-from .exceptions import WebBrowserSupportError
+from .exceptions import ServerError, WebBrowserSupportError
 
-CALLBACK_URL = 'http://localhost:54345/callback'
+SERVER_PORT = 54345
+CALLBACK_URL = f'http://localhost:{SERVER_PORT}/callback'
 DEFAULT_SCOPE = 'openid'
 LOGIN_TIMEOUT = 90
 
@@ -27,14 +29,16 @@ class OAuth4CLI(OAuthTools):
             Thread.__init__(self)
             app = Flask(__name__)
             app.route('/callback')(self.callback)
-            self.server = make_server('localhost', 54345, app)
+            self.server = make_server('localhost', SERVER_PORT, app)
             self.auth_code = None
             self.state = None
             self.ctx = app.app_context()
             self.ctx.push()
 
         def run(self):
+            print("before")
             self.server.serve_forever()
+            print("after")
 
         def callback(self):
             self.auth_code = request.args["code"]
@@ -46,6 +50,9 @@ class OAuth4CLI(OAuthTools):
 
     def login(self):
         logging.getLogger("werkzeug").disabled = True
+
+        if socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect_ex(('localhost', SERVER_PORT)) == 0:
+            raise ServerError(f"failed to start listener: port {SERVER_PORT} is in use")
 
         server = self.ServerThread()
         server.start()
