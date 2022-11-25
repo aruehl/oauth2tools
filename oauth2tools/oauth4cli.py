@@ -36,9 +36,7 @@ class OAuth4CLI(OAuthTools):
             self.ctx.push()
 
         def run(self):
-            print("before")
             self.server.serve_forever()
-            print("after")
 
         def callback(self):
             self.auth_code = request.args["code"]
