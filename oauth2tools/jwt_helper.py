@@ -40,7 +40,7 @@ def get_claim(token: str, claim_name: str):
 def validate_by_key(token: str, signing_key: str, algorithms: list = None, **kwargs) -> dict:
     """
     Using PyJWT (https://pyjwt.readthedocs.io/en/latest/usage.html) to validate the JWT.
-    Algorithms are restricted to RS256 and ES256 by default.
+    Algorithms are restricted to RS256, RS384, RS512, ES256, ES384 and ES512 by default.
     All keyword arguments are bypassed. For example:
     issuer="https://www.example.com/idp/test"
     audience=["my_service"]
@@ -57,7 +57,7 @@ def validate_by_key(token: str, signing_key: str, algorithms: list = None, **kwa
     :return: decoded body
     """
     if algorithms is None:
-        algorithms = ["ES256", "RS256"]
+        algorithms = ["ES256", "ES384", "ES512", "RS256", "RS384", "RS512"]
     if "leeway" not in kwargs:
         kwargs["leeway"] = 5
     decoded = jwt.decode(
