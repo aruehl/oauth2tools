@@ -2,6 +2,12 @@
 
 A toolset for the most requirements dealing with OAuth2 and OpenID Connect.
 
+## Installation
+
+You can download it from [pypi.com](https://pypi.org/project/oauth2tools/) or install it with pip
+
+    pip install oauth2tools
+
 ## Samples
 
 ###  Building the URL for the authentication endpoint
