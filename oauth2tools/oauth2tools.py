@@ -15,17 +15,20 @@ class OAuthTools(object):
                  client_secret: str = None,
                  scope: str = None,
                  pkce: str = None,
-                 oidc: bool = True):
+                 oidc: bool = True,
+                 well_known_data: str = None,
+                 ):
         """
         Initiate the OAuthTools.
-        :param well_known_url:
-        :param client_id:
-        :param client_secret:
+        :param well_known_url: URL of the well-known endpoint
+        :param client_id: client id
+        :param client_secret: client secret
         :param scope: space separated list of scopes
         :param pkce: if required, the type of pkce method. Valid are 'plain' and 'S256'. If possible use S256.
         :param oidc: if True (default), the additional nonce parameter will be used
+        :param well_known_data: if no well-known endpoint is provided, set well_known_url to None and input the expected json here
         """
-        self.well_known = tools.well_known_metadata(well_known_url)
+        self.well_known = tools.well_known_metadata(well_known_url) if well_known_url is None else well_known_data
         self.client_id = client_id
         self.client_secret = client_secret
         self.oidc = oidc
