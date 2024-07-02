@@ -11,7 +11,7 @@
 
 #### versioning and tagging
 
-    python package.py <mayor|minor|patch>
+    python package.py <major|minor|patch>
 
 #### build and upload the package to pypi
 
