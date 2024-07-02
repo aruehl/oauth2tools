@@ -10,13 +10,13 @@ You can download it from [pypi.org](https://pypi.org/project/oauth2tools/) or in
 
 ## Samples
 
-###  Building the URL for the authentication endpoint
+### Building the URL for the authentication endpoint
 
     from oauth2tools import OAuthTools
 
     tools = OAuthTools(
-        well_known_url="<url>", 
-        client_id="<cid>", 
+        well_known_url="<url>",
+        client_id="<cid>",
         client_secret="<secret>")
     auth_url = tools.authorization_url(redirect_uri="<uri>")
 
@@ -25,8 +25,8 @@ You can download it from [pypi.org](https://pypi.org/project/oauth2tools/) or in
     from oauth2tools import OAuth4CLI
 
     o4c = OAuth4CLI(
-        well_known_url="<url>", 
-        client_id="<cid>", 
+        well_known_url="<url>",
+        client_id="<cid>",
         client_secret="<secret>")
     response = o4c.login()
     access_token = response.get('access_token')
@@ -34,10 +34,10 @@ You can download it from [pypi.org](https://pypi.org/project/oauth2tools/) or in
 ### Validate an received token
 
     from oauth2tools import jwt_helper
-    
+
     try:
         jwt_helper.validate_by_jwks(
-            token="<jwt>", 
+            token="<jwt>",
             jwks_url="<jwks_url>",
             claims={"<claim_name>": "expected_value"})
     except Exception as e:
