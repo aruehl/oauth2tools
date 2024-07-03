@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.7"
 classifiers = [ "Development Status :: 4 - Beta", "Programming Language :: Python :: 3", "License :: OSI Approved :: MIT License", "Operating System :: OS Independent",]
 keywords = [ "OAuth2", "OIDC", "OpenID Connect", "Tools", "Helper",]
-dependencies = [ "flask", "requests", "werkzeug",]
+dependencies = [ "cryptography", "flask", "requests", "werkzeug", "PyJWT",]
 [[project.authors]]
 name = "Andreas Rühl"
 
