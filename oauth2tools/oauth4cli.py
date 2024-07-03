@@ -94,8 +94,7 @@ class OAuth4CLI(OAuthTools):
         data = validate_by_jwks(
             token=oauth2token.get('id_token', None),
             jwks_url=self.well_known.get('jwks_uri'),
-            options={"verify_aud": False},
-            claims={"nonce": self.nonce} if self.nonce else {}
+            options={"verify_aud": False}
         )
         logging.debug(f"decoded id_token body: {data}")
         return oauth2token
