@@ -28,7 +28,7 @@ class OAuthTools(object):
         :param oidc: if True (default), the additional nonce parameter will be used
         :param well_known_data: if no well-known endpoint is provided, set well_known_url to None and input the expected json here
         """
-        self.well_known = tools.well_known_metadata(well_known_url) if well_known_url is None else well_known_data
+        self.well_known = tools.well_known_metadata(well_known_url) if well_known_url is not None else well_known_data
         self.client_id = client_id
         self.client_secret = client_secret
         self.oidc = oidc
