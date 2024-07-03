@@ -15,7 +15,7 @@ from .exceptions import ServerError, WebBrowserSupportError
 SERVER_PORT = 54345
 CALLBACK_URL = f'http://localhost:{SERVER_PORT}/callback'
 DEFAULT_SCOPE = 'openid'
-LOGIN_TIMEOUT = 90
+LOGIN_TIMEOUT = 120
 
 
 class OAuth4CLI(OAuthTools):
@@ -32,6 +32,7 @@ class OAuth4CLI(OAuthTools):
             self.server = make_server('localhost', SERVER_PORT, app)
             self.auth_code = None
             self.state = None
+            self.error = False
             self.ctx = app.app_context()
             self.ctx.push()
 
@@ -39,9 +40,16 @@ class OAuth4CLI(OAuthTools):
             self.server.serve_forever()
 
         def callback(self):
-            self.auth_code = request.args["code"]
             self.state = request.args["state"]
-            return render_template("close_me.html")
+            try:
+                self.auth_code = request.args["code"]
+                return render_template("close_me.html")
+            except:
+                logging.debug("unexpected response from server:")
+                for arg in request.args.keys():
+                    logging.debug(f"{arg}: {request.args[arg]}")
+                self.error = True
+                return "unexpected error"
 
         def shutdown(self):
             self.server.shutdown()
@@ -60,7 +68,7 @@ class OAuth4CLI(OAuthTools):
 
         count = 0
         try:
-            while server.auth_code is None and count < LOGIN_TIMEOUT:
+            while server.state is None and count < LOGIN_TIMEOUT:
                 time.sleep(1)
                 count += 1
         except KeyboardInterrupt:
@@ -69,7 +77,10 @@ class OAuth4CLI(OAuthTools):
         finally:
             server.shutdown()
 
-        if server.auth_code is None:
+        if server.error:
+            raise ServerError(f"unexpect server response")
+
+        if server.state is None:
             raise Exception(f"login timeout of {LOGIN_TIMEOUT} seconds reached")
 
         if self.state != server.state:
