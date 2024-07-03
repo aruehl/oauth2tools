@@ -44,7 +44,7 @@ class OAuthTools(object):
         response = requests.post(self.well_known.get('token_endpoint'), data=form_data)
         response.raise_for_status()
         response_json = response.json()
-        if self.oidc and jwt_helper.get_claim(response_json.get('access_token'), "nonce") != self.nonce:
+        if self.oidc and jwt_helper.get_claim(response_json.get('id_token'), "nonce") != self.nonce:
             raise TokenManipulationError('unexpected nonce value in access-token')
         self.refresh_token = response_json.get('refresh_token')
         return response_json
