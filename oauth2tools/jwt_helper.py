@@ -21,6 +21,14 @@ def get_body(token: str) -> dict:
     return jwt.decode(token, options={"verify_signature": False})
 
 
+def print_body(token: str):
+    """
+    Writes the body of the token formated to stdout
+    :param token: the jwt
+    """
+    print(json.dumps(get_body(token), indent = 2, separators=(', ', ': ')))
+
+
 def get_claim(token: str, claim_name: str):
     """
     Returns the value of the named jwt claim
